@@ -1,0 +1,50 @@
+.new-project-container h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+.new-project-container form{
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+}
+.new-project-container form input, .new-project-container form textarea {
+    padding: 10px;
+    margin-bottom: 15px;
+    background-color: #222;
+    border: 1px solid #444;
+    border-radius: 5px;
+    margin: 0 0 15px;
+    resize: none;
+    color: #fff;
+}
+.new-project-container form button {
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+.new-project-container form button:hover {
+    background-color: #45a049;
+}
+.go-home-btn{
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #555;
+    color: white;
+    border-radius: 100%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+}
+.go-home-btn:hover{
+    background-color: #444;
+}

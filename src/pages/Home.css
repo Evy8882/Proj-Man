@@ -1,0 +1,16 @@
+.home-container h1{
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+.home-btn{
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin: 20px 0;
+    cursor: pointer;
+}
+.home-btn:hover{
+    background-color: #45a049;
+}
