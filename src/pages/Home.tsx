@@ -1,8 +1,10 @@
 import "./Home.css";
+import ProjBar from "../components/ProjBar";
 
 function Home({setNavRoute}: {setNavRoute: (route: string) => void}) {
     return (
     <div className="home-container container">
+        <ProjBar setNavRoute={setNavRoute} />
         <h1>Proj-Man</h1>
         <p>Welcome to proj-man, your project management tool!</p>
         <button className="home-btn" onClick={()=>{setNavRoute("/new-project")}}>Create a new project</button>
