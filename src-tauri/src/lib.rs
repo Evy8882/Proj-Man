@@ -9,6 +9,12 @@ struct Todo {
     completed: bool,
 }
 
+impl Todo {
+    fn set_completed(&mut self) {
+        self.completed = !self.completed;
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 struct Project {
     id: String,
@@ -107,6 +113,45 @@ fn new_todo(project_id: &str, title: &str) {
     save_json_data(&projects);
 }
 
+#[tauri::command(rename_all = "snake_case")]
+fn set_todo_done(project_id: &str, todo_id: &str){
+    let mut projects: Vec<Project> = match get_json_data() {
+        Some(v) => v,
+        None => Vec::new(),
+    };
+    for project in &mut projects {
+        if &project.id == project_id {
+            for todo in &mut project.todos {
+                if &todo.id == todo_id {
+                    todo.set_completed();
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    save_json_data(&projects);
+}
+
+#[tauri::command(rename_all = "snake_case")]
+fn delete_todo(project_id: &str, todo_id: &str){
+    let mut projects: Vec<Project> = match get_json_data() {
+        Some(v) => v,
+        None => Vec::new(),
+    };
+    for project in &mut projects {
+        if &project.id == project_id {
+            let position = project.todos.iter().position(|todo| &todo.id == todo_id);
+            if let Some(index) = position {
+                project.todos.remove(index);
+            }
+            break;
+        }
+    }
+    save_json_data(&projects);
+}
+
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -116,7 +161,9 @@ pub fn run() {
             create_new_project,
             get_projects,
             get_project_by_id,
-            new_todo
+            new_todo,
+            set_todo_done,
+            delete_todo,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

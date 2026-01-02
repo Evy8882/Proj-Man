@@ -27,6 +27,11 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
         getProjectById(projectId);
     }
 
+    async function toggleTodoCompleted(todoId: string) {
+        await invoke("set_todo_done", {project_id: projectId, todo_id: todoId});
+        getProjectById(projectId);
+    }
+
     useEffect(() => {
         getProjectById(projectId);
     }, [projectId])
@@ -68,8 +73,11 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
                         <div className="item-details">
                         <p>Status: {item.completed ? "Completed" : "Pending"}</p>
                             <div className="actions">
-                                <button>Concluir</button>
-                                <button>Excluir</button>
+                                <button onClick={() => {toggleTodoCompleted(item.id)}}>Concluir</button>
+                                <button onClick={async () => {
+                                    await invoke("delete_todo", {project_id: projectId, todo_id: item.id});
+                                    getProjectById(projectId);
+                                }}>Excluir</button>
                                 <button>↑</button>
                                 <button>↓</button>
                             </div>
