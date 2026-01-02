@@ -78,8 +78,14 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
                                     await invoke("delete_todo", {project_id: projectId, todo_id: item.id});
                                     getProjectById(projectId);
                                 }}>Excluir</button>
-                                <button>↑</button>
-                                <button>↓</button>
+                                <button onClick={async () => {
+                                    await invoke("move_todo_up", {project_id: projectId, todo_id: item.id});
+                                    getProjectById(projectId);
+                                }}>↑</button>
+                                <button onClick={async () => {
+                                    await invoke("move_todo_down", {project_id: projectId, todo_id: item.id});
+                                    getProjectById(projectId);
+                                }}>↓</button>
                             </div>
                         </div>
                     </div>
