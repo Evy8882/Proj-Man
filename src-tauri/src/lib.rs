@@ -85,6 +85,29 @@ fn get_project_by_id(project_id: &str) -> String {
     String::from("Not found")
 }
 
+#[tauri::command(rename_all = "snake_case")]
+fn new_todo(project_id: &str, title: &str) {
+    let mut projects: Vec<Project> = match get_json_data() {
+        Some(v) => v,
+        None => Vec::new(),
+    };
+
+    let todo = Todo {
+        id: Uuid::new_v4().as_simple().to_string(),
+        title: title.to_string(),
+        completed: false,
+    };
+
+    for project in &mut projects {
+        if &project.id == project_id {
+            project.todos.push(todo);
+            break;
+        }
+    }
+    save_json_data(&projects);
+}
+
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -93,6 +116,7 @@ pub fn run() {
             create_new_project,
             get_projects,
             get_project_by_id,
+            new_todo
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
