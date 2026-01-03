@@ -1,0 +1,6 @@
+.delete-project-btn {
+    background-color: #444 !important;
+}
+.delete-project-btn:hover {
+    background-color: #3f3f3f !important;
+}

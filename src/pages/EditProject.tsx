@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import "./Project.css"
+import "./EditProject.css"
 import ProjBar from "../components/ProjBar";
+import DeleteProject from "../components/DeleteProject";
 
 function EditProject({setNavRoute, projectId}: {setNavRoute: (route: string) => void, projectId: string}) {
     const [notFound, setNotFound] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
     const [projectName, setProjectName] = useState("");
     const [projectDescription, setProjectDescription] = useState("");
+    const [deleteProjectOpened, setDeleteProjectOpened] = useState<boolean>(false)
 
     async function getProjectById(id: string) {
         const projectJson = await invoke<string>("get_project_by_id", {project_id: id});
@@ -57,6 +59,7 @@ function EditProject({setNavRoute, projectId}: {setNavRoute: (route: string) => 
     }
     return (
         <div className="new-project-container container">
+            <DeleteProject opened={deleteProjectOpened} setOpened={setDeleteProjectOpened} projectId={projectId} setNavRoute={setNavRoute}/>
             <ProjBar setNavRoute={setNavRoute} />
             <h1>Edit Project</h1>
             <form action="" onSubmit={handleSubmit}>
@@ -68,6 +71,7 @@ function EditProject({setNavRoute, projectId}: {setNavRoute: (route: string) => 
                 <textarea id="project-description" name="project-description" rows={4}
                 value={projectDescription} onChange={(e) => setProjectDescription(e.target.value)}></textarea>
                 <button type="submit" className="new-project-btn">Save Changes</button>
+                <button type="button" onClick={()=>{setDeleteProjectOpened(true)}} className="delete-project-btn">Delete Project</button>
             </form>
         </div>
     )
