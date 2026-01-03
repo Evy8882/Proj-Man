@@ -9,7 +9,7 @@ function ProjBar({setNavRoute}: {setNavRoute: (route: string) => void}) {
     async function getProjects() {
         const projectsJson = await invoke<string>("get_projects");
         const projects = JSON.parse(projectsJson);
-        setProjects(projects);
+        setProjects(projects.reverse());
     }
 
     useEffect(() => {

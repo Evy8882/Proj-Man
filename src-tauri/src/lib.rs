@@ -54,7 +54,6 @@ fn save_json_data(projects: &Vec<Project>) {
 
 #[tauri::command]
 fn create_new_project(name: &str, description: &str) -> String {
-
     let mut current_projects: Vec<Project> = match get_json_data() {
         Some(v) => v,
         None => Vec::new(),
@@ -100,44 +99,42 @@ fn get_project_by_id(project_id: &str) -> String {
 
 #[tauri::command(rename_all = "snake_case")]
 fn new_todo(project_id: &str, title: &str) {
-    let mut projects: Vec<Project> = match get_json_data() {
-        Some(v) => v,
-        None => Vec::new(),
-    };
-
     let todo = Todo {
         id: Uuid::new_v4().as_simple().to_string(),
         title: title.to_string(),
         completed: false,
     };
 
-    for project in &mut projects {
-        if &project.id == project_id {
-            project.todos.push(todo);
-            break;
-        }
-    }
-    save_json_data(&projects);
-}
-
-#[tauri::command(rename_all = "snake_case")]
-fn set_todo_done(project_id: &str, todo_id: &str){
+    let project = delete_project(project_id);
+    if let Some(mut proj) = project {
+    proj.todos.push(todo);
     let mut projects: Vec<Project> = match get_json_data() {
         Some(v) => v,
         None => Vec::new(),
     };
-    for project in &mut projects {
-        if &project.id == project_id {
-            for todo in &mut project.todos {
-                if &todo.id == todo_id {
-                    todo.set_completed();
-                    break;
-                }
-            }
-            break;
-        }
-    }
+    projects.push(proj);
     save_json_data(&projects);
+    }
+}
+
+#[tauri::command(rename_all = "snake_case")]
+fn set_todo_done(project_id: &str, todo_id: &str) {
+    
+    let project = delete_project(project_id);
+    if let Some(mut proj) = project {
+        for todo in &mut proj.todos {
+            if &todo.id == todo_id {
+                todo.set_completed();
+                break;
+            }
+        }
+        let mut projects: Vec<Project> = match get_json_data() {
+        Some(v) => v,
+        None => Vec::new(),
+        };
+        projects.push(proj);
+        save_json_data(&projects);
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -149,34 +146,31 @@ struct TodoDeleteResponse {
 
 #[tauri::command(rename_all = "snake_case")]
 fn delete_todo(project_id: &str, todo_id: &str) -> Option<TodoDeleteResponse> {
-    let mut projects: Vec<Project> = match get_json_data() {
-        Some(v) => v,
-        None => Vec::new(),
-    };
-    for project in &mut projects {
-        if &project.id == project_id {
-            let position = project.todos.iter().position(|todo| &todo.id == todo_id);
-            if let Some(index) = position {
-                let todo = project.todos.remove(index);
-                save_json_data(&projects);
-                return Some(TodoDeleteResponse {
-                        deleted_todo: todo,
-                        position: index,
-                        project_id: project_id.to_string(),
-                    }
-                );
-            }
-            break;
+    let project = delete_project(project_id);
+    if let Some(mut proj) = project {
+        let position = proj.todos.iter().position(|todo| &todo.id == todo_id);
+        if let Some(index) = position {
+            let todo = proj.todos.remove(index);
+            let mut projects: Vec<Project> = match get_json_data() {
+                Some(v) => v,
+                None => Vec::new(),
+            };
+            projects.push(proj);
+            save_json_data(&projects);
+            return Some(TodoDeleteResponse {
+                deleted_todo: todo,
+                position: index,
+                project_id: project_id.to_string(),
+            });
         }
     }
     None
 }
 
-
 #[tauri::command(rename_all = "snake_case")]
 fn move_todo_up(project_id: &str, todo_id: &str) {
     let moved_todo = delete_todo(project_id, todo_id);
-    let project = get_specific_project(project_id);
+    let project = delete_project(project_id);
     if let Some(mut proj) = project {
         if let Some(moved) = moved_todo {
             let new_position = if moved.position == 0 {
@@ -189,12 +183,7 @@ fn move_todo_up(project_id: &str, todo_id: &str) {
                 Some(v) => v,
                 None => Vec::new(),
             };
-            for p in &mut projects {
-                if &p.id == project_id {
-                    *p = proj;
-                    break;
-                }
-            }
+            projects.push(proj);
             save_json_data(&projects);
         }
     }
@@ -203,7 +192,7 @@ fn move_todo_up(project_id: &str, todo_id: &str) {
 #[tauri::command(rename_all = "snake_case")]
 fn move_todo_down(project_id: &str, todo_id: &str) {
     let moved_todo = delete_todo(project_id, todo_id);
-    let project = get_specific_project(project_id);
+    let project = delete_project(project_id);
     if let Some(mut proj) = project {
         if let Some(moved) = moved_todo {
             let new_position = if moved.position == proj.todos.len() {
@@ -216,20 +205,30 @@ fn move_todo_down(project_id: &str, todo_id: &str) {
                 Some(v) => v,
                 None => Vec::new(),
             };
-            for p in &mut projects {
-                if &p.id == project_id {
-                    *p = proj;
-                    break;
-                }
-            }
+            projects.push(proj);
             save_json_data(&projects);
         }
     }
 }
 
 #[tauri::command(rename_all = "snake_case")]
+fn delete_project(project_id: &str) -> Option<Project> {
+    let mut projects: Vec<Project> = match get_json_data() {
+        Some(v) => v,
+        None => Vec::new(),
+    };
+    let position = projects.iter().position(|p| &p.id == project_id);
+    if let Some(index) = position {
+        let proj = projects.remove(index);
+        save_json_data(&projects);
+        return Some(proj);
+    }
+    None
+}
+
+#[tauri::command(rename_all = "snake_case")]
 fn update_project(project_id: &str, name: &str, description: &str) {
-    let mut project: Project = match get_specific_project(project_id) {
+    let mut project: Project = match delete_project(project_id) {
         Some(v) => v,
         None => return,
     };
@@ -239,25 +238,7 @@ fn update_project(project_id: &str, name: &str, description: &str) {
         Some(v) => v,
         None => Vec::new(),
     };
-    for p in &mut projects {
-        if &p.id == project_id {
-            *p = project;
-            break;
-        }
-    }
-    save_json_data(&projects);
-}
-
-#[tauri::command(rename_all="snake_case")]
-fn delete_project(project_id: &str) {
-    let mut projects: Vec<Project> = match get_json_data() {
-        Some(v) => v,
-        None => Vec::new(),
-    };
-    let position = projects.iter().position(|p| &p.id == project_id);
-    if let Some(index) = position {
-        projects.remove(index);
-    }
+    projects.push(project);
     save_json_data(&projects);
 }
 
