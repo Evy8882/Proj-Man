@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
 import "./NewProject.css";
+import ProjBar from "../components/ProjBar";
 
 function NewProject({setNavRoute}: {setNavRoute: (route: string) => void}) {
     const [projectName, setProjectName] = useState("");
@@ -17,7 +18,7 @@ function NewProject({setNavRoute}: {setNavRoute: (route: string) => void}) {
 
     return (
         <div className="new-project-container container">
-            <button className="go-home-btn" onClick={() => setNavRoute("/")}>←</button>
+            <ProjBar setNavRoute={setNavRoute} />
             <h1>Create a New Project</h1>
             <form action="" onSubmit={handleSubmit}>
                 <label htmlFor="project-name">Project Name:</label>

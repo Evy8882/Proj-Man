@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Project } from "../types/types";
 import "./Project.css"
+import ProjBar from "../components/ProjBar";
 
 function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => void, projectId: string}) {
     const [project, setProject] = useState<Project | null>(null);
@@ -57,11 +58,11 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
     }
     return (
         <div className="project-container container">
-            <button className="go-home-btn" onClick={() => setNavRoute("/")}>←</button>
+            <ProjBar setNavRoute={setNavRoute} />
             <h1>{project?.name}</h1>
             <p>{project?.description}</p>
             <h2>To Do List</h2>
-            <form className="line" onSubmit={addNewTodo}>
+            <form className="new-todo-form" onSubmit={addNewTodo}>
                 <input type="text" className="new-todo-input" required value={title} onChange={(e) => setTitle(e.target.value)} />
                 <button className="new-todo-btn" type="submit">+</button>
             </form>

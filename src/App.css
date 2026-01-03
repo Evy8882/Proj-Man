@@ -26,6 +26,8 @@
   overflow-y: auto;
   width: 250px;
   animation: appear_proj 0.3s ease-in-out;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+  z-index: 1000;
 }
 @keyframes appear_proj {
   from { left: -250px; }
@@ -42,6 +44,9 @@
   margin-bottom: 10px;
   cursor: pointer;
   transition: background-color 50ms;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 .proj-btn:hover{
   background-color: #1f1f1f;
@@ -90,4 +95,38 @@
 }
 .proj-open-btn:hover{
   background-color: #222;
+}
+.new-proj-btn{
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+    cursor: pointer;
+    justify-content: center;
+    transition: background-color 50ms;
+}
+.new-proj-btn:hover{
+    background-color: #45a049;
+}
+.edit-btn{
+    background-color: #0002;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 8px;
+    cursor: pointer;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: 1px solid #fff1;
+    float: right;
+}
+.edit-btn:hover{
+    background-color: #222;
+    outline: 1px solid #fff4;
 }

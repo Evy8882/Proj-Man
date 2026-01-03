@@ -27,10 +27,25 @@ function ProjBar({setNavRoute}: {setNavRoute: (route: string) => void}) {
                 </div>
             </div>
             {projects.map((project) => (
-                <button onClick={()=>{setNavRoute(`/project/${project.id}`)}} key={project.id} className="proj-btn">
+                <button onClick={()=>{
+                    setNavRoute(`/project/${project.id}`)
+                    setOpened(false);
+                }} key={project.id} className="proj-btn">
                     <h3>{project.name}</h3>
+                    <button className="edit-btn"
+                    onClick={async ()=>{
+                        await setTimeout( ( ) => { }, 0 ); // Gambiarra pra não abrir o projeto no lugar KKKKKKKKK
+                        setNavRoute(`/edit-project/${project.id}`)
+                    }}
+                    >✎</button>
                 </button>
             ))}
+            <button className="proj-btn new-proj-btn" onClick={()=>{
+                setNavRoute("/new-project");
+                setOpened(false);
+                }}>
+                <h3>+ New Project</h3>
+            </button>
             </div>
         );
     }else{

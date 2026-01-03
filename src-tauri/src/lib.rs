@@ -227,6 +227,27 @@ fn move_todo_down(project_id: &str, todo_id: &str) {
     }
 }
 
+#[tauri::command(rename_all = "snake_case")]
+fn update_project(project_id: &str, name: &str, description: &str) {
+    let mut project: Project = match get_specific_project(project_id) {
+        Some(v) => v,
+        None => return,
+    };
+    project.name = name.to_string();
+    project.description = description.to_string();
+    let mut projects: Vec<Project> = match get_json_data() {
+        Some(v) => v,
+        None => Vec::new(),
+    };
+    for p in &mut projects {
+        if &p.id == project_id {
+            *p = project;
+            break;
+        }
+    }
+    save_json_data(&projects);
+}
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -240,7 +261,8 @@ pub fn run() {
             set_todo_done,
             delete_todo,
             move_todo_up,
-            move_todo_down
+            move_todo_down,
+            update_project
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
