@@ -19,11 +19,19 @@ impl Todo {
 }
 
 #[derive(Serialize, Deserialize)]
+struct Note {
+    id: String,
+    name: String,
+    content: String,
+}
+
+#[derive(Serialize, Deserialize)]
 struct Project {
     id: String,
     name: String,
     description: String,
     todos: Vec<Todo>,
+    notes: Vec<Note>,
 }
 
 fn get_json_data() -> Option<Vec<Project>> {
@@ -68,6 +76,11 @@ fn create_new_project(name: &str, description: &str) -> String {
         name: name.to_string(),
         description: description.to_string(),
         todos: Vec::new(),
+        notes: Vec::from([Note {
+            id: Uuid::new_v4().as_simple().to_string(),
+            name: "main".to_string(),
+            content: String::new(),
+        }])
     };
     let p_id = project.id.clone();
     current_projects.push(project);

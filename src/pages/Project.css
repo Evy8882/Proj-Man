@@ -1,7 +1,44 @@
-.project-container>h2{
-    font-size: 1.1rem;
+.project-container{
+    justify-content: start;
 }
 
+.project-container>h1{
+    font-size: 2.5rem;
+    margin: 20px 0;
+}
+
+.proj-subtitle{
+    font-size: 1.1rem;
+    margin: 12px 0;
+}
+.to-do-section, .notes-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+.mode-switcher {
+    margin: 12px 0;
+    display: flex;
+    gap: 3px
+}
+.mode-switcher button {
+    background-color: #0002;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background-color 50ms;
+}
+.mode-switcher button:hover {
+    background-color: #222;
+}
+.mode-switcher button:disabled {
+    background-color: #444;
+    outline: 1px solid #fff4;
+    cursor: default;
+}
 .to-do-list{
     margin-top: 10px;
     border: 1px solid #ccc;
@@ -91,6 +128,42 @@
 }
 .to-do-item:hover .actions{
     display: flex;
+}
+.notes-textarea{
+    width: 80%;
+    height: 600px;
+    background-color: #222;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 1rem;
+    resize: none;
+    z-index: 5;
+}
+.notes-tab{
+    display: flex;
+    width: 80%;
+    padding-left: 4px;
+}
+.notes-tab button {
+    background-color: #0002;
+    color: white;
+    border: none;
+    border-radius: 8px 8px 0px 0px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background-color 50ms;
+}
+.notes-tab button:hover {
+    background-color: #222;
+}
+.notes-tab button:disabled {
+    background-color: #444;
+    outline: 1px solid #fff4;
+    cursor: default;
+    animation: get-selected 4s;
+    z-index: 3;
 }
 @media screen and (max-width: 580px) {
     .item-details{
