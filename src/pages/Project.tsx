@@ -4,6 +4,7 @@ import { Project } from "../types/types";
 import "./Project.css"
 import ProjBar from "../components/ProjBar";
 import EditTodo from "../components/EditTodo";
+import NewNote from "../components/NewNote";
 
 function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => void, projectId: string}) {
     const [project, setProject] = useState<Project | null>(null);
@@ -17,6 +18,7 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
     const [editTodoOpened, setEditTodoOpened] = useState<boolean>(false);
     const [editTodoId, setEditTodoId] = useState<string>("");
     const [editTodoTitle, setEditTodoTitle] = useState<string>("");
+    const [newNoteOpened, setNewNoteOpened] = useState<boolean>(false);
 
     async function getProjectById(id: string) {
         const projectJson = await invoke<string>("get_project_by_id", {project_id: id});
@@ -43,11 +45,11 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
 
     useEffect(() => {
         getProjectById(projectId);
-    }, [projectId, editTodoOpened])
+    }, [projectId, editTodoOpened, newNoteOpened]);
 
     useEffect(() => {
         if (mode === "notes") {
-            setTextAreaContent(project?.notes.find(n => n.name === noteTab)?.content || "");
+            setTextAreaContent(project?.notes.find(n => n.id === noteTab)?.content || "");
         }
     }, [noteTab])
 
@@ -56,6 +58,18 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
         setEditTodoTitle(todoTitle);
         setEditTodoOpened(true);
     }
+
+    async function saveNoteContent(projectId: string, noteId: string, newContent: string) {
+        if (noteTab) {
+            await invoke("set_note_content", {
+                project_id: projectId,
+                note_id: noteId,
+                content: newContent
+            });
+            getProjectById(projectId);
+        }
+    }
+
 
     if (notFound) {
         return (
@@ -124,15 +138,22 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
             ) :
             mode === "notes" ? (
                 <div className="notes-section">
+                    <NewNote opened={newNoteOpened} setOpened={setNewNoteOpened} projectId={projectId} />
                     <h2 className="proj-subtitle">Notes</h2>
                     <div className="notes-tab">
                         {project?.notes.map((note, i) => (
-                            <button key={i} onClick={()=>{setNoteTab(note.name)}} disabled={noteTab === note.name}>{note.name}</button>
+                            <button className="tab-btn" key={i} onClick={()=>{setNoteTab(note.id)}} disabled={noteTab === note.id}>{note.name} <button className="delete-tab-btn">×</button></button>
                         ))}
+                        <button className="tab-btn" onClick={async ()=> {
+                            setNewNoteOpened(true);
+                        }}>+</button>
                         {/* <button onClick={()=>{setNoteTab('main')}} disabled={noteTab === "main"}>Main</button> */}
                     </div>
                     {noteTab && (
-                        <textarea className="notes-textarea" value={textAreaContent} onChange={(e) => setTextAreaContent(e.target.value)}></textarea>
+                        <textarea className="notes-textarea" value={textAreaContent} onChange={(e) => {
+                            setTextAreaContent(e.target.value)
+                            saveNoteContent(projectId, noteTab || "", e.target.value);
+                        }}></textarea>
                     )}
                 </div>
             ) : null}

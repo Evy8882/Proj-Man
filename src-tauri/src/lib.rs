@@ -204,9 +204,11 @@ fn set_note_content(project_id: &str, note_id: &str, content: &str) {
     let project = delete_project(project_id);
 
     if let Some(mut proj) = project {
-        let position = proj.notes.iter().position(|n| n.id == note_id);
-        if let Some(pos) = position {
-            proj.notes[pos].set_content(content);
+        for note in &mut proj.notes {
+            if &note.id == note_id {
+                note.set_content(content);
+                break;
+            }
         }
         let mut projects = match get_json_data() {
             Some(v) => v,

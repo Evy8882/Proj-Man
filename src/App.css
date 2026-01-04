@@ -132,7 +132,7 @@
     outline: 1px solid #fff4;
 }
 /* Delete Project & Edit Todo Confirm Screen */
-.delete-project-container, .edit-todo-container{
+.delete-project-container, .edit-todo-container, .new-note-container{
   position: fixed;
   width: 60%;
   height: 60%;
@@ -176,7 +176,7 @@
 .cancel-btn:hover{
     background-color: #444;
 }
-.edit-todo-container input{
+.edit-todo-container input, .new-note-container input{
     width: 80%;
     padding: 10px;
     margin-top: 15px;
