@@ -141,6 +141,10 @@ fn new_todo(project_id: &str, title: &str) {
 
 #[tauri::command(rename_all = "snake_case")]
 fn new_note(project_id: &str, name: &str) {
+    if name.len() == 0 {
+        return;
+    }
+
     let note = Note {
         id: Uuid::new_v4().as_simple().to_string(),
         name: name.to_string(),
@@ -250,6 +254,23 @@ fn delete_todo(project_id: &str, todo_id: &str) -> Option<TodoDeleteResponse> {
 }
 
 #[tauri::command(rename_all = "snake_case")]
+fn delete_note(project_id: &str, note_id: &str) {
+    let project = delete_project(project_id);
+    if let Some(mut proj) = project {
+        let position = proj.notes.iter().position(|note| &note.id == note_id);
+        if let Some(index) = position {
+            proj.notes.remove(index);
+            let mut projects: Vec<Project> = match get_json_data() {
+                Some(v) => v,
+                None => Vec::new(),
+            };
+            projects.push(proj);
+            save_json_data(&projects);
+        }
+    }
+}
+
+#[tauri::command(rename_all = "snake_case")]
 fn move_todo_up(project_id: &str, todo_id: &str) {
     let moved_todo = delete_todo(project_id, todo_id);
     let project = delete_project(project_id);
@@ -342,6 +363,7 @@ pub fn run() {
             set_todo_title,
             new_note,
             set_note_content,
+            delete_note,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

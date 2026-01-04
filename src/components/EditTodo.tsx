@@ -15,7 +15,7 @@ function EditTodo({opened, setOpened, projectId, todoId, todoTitle}: {opened: bo
 
     if (opened) {
         return (
-            <div className="edit-todo-container">
+            <div className="edit-todo-container modal-container">
                 <h2>Edit Todo</h2>
                 <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
                 <button className="confirm-btn" onClick={saveChanges}>Save</button>

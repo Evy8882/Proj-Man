@@ -17,7 +17,7 @@ function NewNote({opened, setOpened, projectId}: {opened: boolean; setOpened: (o
         return null;
     }
     return (
-        <div className="new-note-container">
+        <div className="new-note-container modal-container">
             <h2>New Note</h2>
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
             <button className="confirm-btn" onClick={saveChanges}>Save</button>

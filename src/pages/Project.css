@@ -158,6 +158,9 @@
     align-items: center;
     justify-content: center;
 }
+.notes-tab .tab-btn:not(:last-child) {
+    padding-right: 26px;
+}
 .notes-tab .tab-btn:hover {
     background-color: #222;
 }
@@ -166,6 +169,13 @@
     outline: 1px solid #fff4;
     cursor: default;
     animation: get-selected 4s;
+}
+.note-tab-container{
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.note-tab-container:has(.tab-btn:disabled) {
     z-index: 3;
 }
 .delete-tab-btn {
@@ -180,10 +190,13 @@
     font-size: 1rem;
     line-height: 1rem;
     transition: background-color 200ms;
+    position: absolute;
+    right: 4px;
 }
 .delete-tab-btn:hover {
     background-color: #944;
 }
+
 @media screen and (max-width: 580px) {
     .item-details{
         flex-direction: column;

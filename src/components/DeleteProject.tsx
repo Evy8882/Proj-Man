@@ -5,7 +5,7 @@ function DeleteProject({opened, setOpened, projectId, setNavRoute}:
 
     if (opened) {
         return (
-            <div className="delete-project-container">
+            <div className="delete-project-container modal-container">
                 <h2>Are you sure you want to delete this project?</h2>
                 <button className="confirm-btn" onClick={async ()=>{
                     await invoke("delete_project", {project_id: projectId});

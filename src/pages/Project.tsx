@@ -5,6 +5,7 @@ import "./Project.css"
 import ProjBar from "../components/ProjBar";
 import EditTodo from "../components/EditTodo";
 import NewNote from "../components/NewNote";
+import DeleteNote from "../components/DeleteNote";
 
 function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => void, projectId: string}) {
     const [project, setProject] = useState<Project | null>(null);
@@ -19,6 +20,8 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
     const [editTodoId, setEditTodoId] = useState<string>("");
     const [editTodoTitle, setEditTodoTitle] = useState<string>("");
     const [newNoteOpened, setNewNoteOpened] = useState<boolean>(false);
+    const [deleteNoteOpened, setDeleteNoteOpened] = useState<boolean>(false);
+    const [deleteNoteId, setDeleteNoteId] = useState<string>("");
 
     async function getProjectById(id: string) {
         const projectJson = await invoke<string>("get_project_by_id", {project_id: id});
@@ -45,7 +48,7 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
 
     useEffect(() => {
         getProjectById(projectId);
-    }, [projectId, editTodoOpened, newNoteOpened]);
+    }, [projectId, editTodoOpened, newNoteOpened, deleteNoteOpened]);
 
     useEffect(() => {
         if (mode === "notes") {
@@ -70,6 +73,11 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
         }
     }
 
+    function openDeleteNote(noteId: string) {
+        setDeleteNoteId(noteId);
+        setDeleteNoteOpened(true);
+        setNoteTab("");
+    }
 
     if (notFound) {
         return (
@@ -138,11 +146,19 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
             ) :
             mode === "notes" ? (
                 <div className="notes-section">
+                    <DeleteNote opened={deleteNoteOpened} setOpened={setDeleteNoteOpened} noteId={deleteNoteId} projectId={projectId}></DeleteNote>
                     <NewNote opened={newNoteOpened} setOpened={setNewNoteOpened} projectId={projectId} />
                     <h2 className="proj-subtitle">Notes</h2>
                     <div className="notes-tab">
                         {project?.notes.map((note, i) => (
-                            <button className="tab-btn" key={i} onClick={()=>{setNoteTab(note.id)}} disabled={noteTab === note.id}>{note.name} <button className="delete-tab-btn">×</button></button>
+                            <div className="note-tab-container" key={note.id}>
+                            <button className="tab-btn" key={i} onClick={()=>{setNoteTab(note.id)}} disabled={noteTab === note.id}>{note.name} 
+                            </button>
+                                <button className="delete-tab-btn" onClick={()=>{
+                                    openDeleteNote(note.id);
+                                }}>
+                                    ×
+                                </button></div>
                         ))}
                         <button className="tab-btn" onClick={async ()=> {
                             setNewNoteOpened(true);
