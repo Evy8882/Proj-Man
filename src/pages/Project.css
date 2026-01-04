@@ -7,7 +7,7 @@
     border: 1px solid #ccc;
     padding: 10px;
     border-radius: 5px;
-    width: 60%;
+    width: 80%;
     background-color: #1f1f1f;
     min-height: 100px;
     display: flex;
@@ -58,13 +58,14 @@
     align-items: center;
     margin-top: 4px;
     flex-wrap: wrap;
+    min-height: 25px;
 }
 .actions button{
     background-color: #0002;
     color: white;
     border: none;
     border-radius: 5px;
-    padding: 5px 2px;
+    padding: 2px 2px;
     cursor: pointer;
     height: 25px;
     display: flex;
@@ -77,14 +78,35 @@
     outline: 1px solid #fff4;
 }
 .actions{
-    display: flex;
+    display: none;
     gap: 2px;
     flex-wrap: wrap;
 }
 .new-todo-form{
     display: flex;
     flex-direction: row;
-    width: 60%;
+    width: 80%;
     margin-top: 10px;
     height: 35px;
+}
+.to-do-item:hover .actions{
+    display: flex;
+}
+@media screen and (max-width: 580px) {
+    .item-details{
+        flex-direction: column;
+        gap: 4px;
+    }
+    .actions button{
+        padding: 2px 0px;
+        width: 100%;
+    }
+    .actions{
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .to-do-list, .new-todo-form {
+        width: 100%;
+    }
 }

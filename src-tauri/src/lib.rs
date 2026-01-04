@@ -13,6 +13,9 @@ impl Todo {
     fn set_completed(&mut self) {
         self.completed = !self.completed;
     }
+    fn set_title(&mut self, new_title: &str) {
+        self.title = new_title.to_string();
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -125,6 +128,26 @@ fn set_todo_done(project_id: &str, todo_id: &str) {
         for todo in &mut proj.todos {
             if &todo.id == todo_id {
                 todo.set_completed();
+                break;
+            }
+        }
+        let mut projects: Vec<Project> = match get_json_data() {
+        Some(v) => v,
+        None => Vec::new(),
+        };
+        projects.push(proj);
+        save_json_data(&projects);
+    }
+}
+
+#[tauri::command(rename_all = "snake_case")]
+fn set_todo_title(project_id: &str, todo_id: &str, new_title: &str) {
+    
+    let project = delete_project(project_id);
+    if let Some(mut proj) = project {
+        for todo in &mut proj.todos {
+            if &todo.id == todo_id {
+                todo.set_title(new_title);
                 break;
             }
         }
@@ -256,7 +279,8 @@ pub fn run() {
             move_todo_up,
             move_todo_down,
             update_project,
-            delete_project
+            delete_project,
+            set_todo_title,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

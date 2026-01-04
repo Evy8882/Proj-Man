@@ -3,12 +3,16 @@ import { invoke } from "@tauri-apps/api/core";
 import { Project } from "../types/types";
 import "./Project.css"
 import ProjBar from "../components/ProjBar";
+import EditTodo from "../components/EditTodo";
 
 function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => void, projectId: string}) {
     const [project, setProject] = useState<Project | null>(null);
     const [notFound, setNotFound] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
     const [title, setTitle] = useState<string>("");
+    const [editTodoOpened, setEditTodoOpened] = useState<boolean>(false);
+    const [editTodoId, setEditTodoId] = useState<string>("");
+    const [editTodoTitle, setEditTodoTitle] = useState<string>("");
 
     async function getProjectById(id: string) {
         const projectJson = await invoke<string>("get_project_by_id", {project_id: id});
@@ -35,7 +39,13 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
 
     useEffect(() => {
         getProjectById(projectId);
-    }, [projectId])
+    }, [projectId, editTodoOpened])
+
+    const openEditTodo = (todoId: string, todoTitle: string) => {
+        setEditTodoId(todoId);
+        setEditTodoTitle(todoTitle);
+        setEditTodoOpened(true);
+    }
 
     if (notFound) {
         return (
@@ -59,6 +69,7 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
     return (
         <div className="project-container container">
             <ProjBar setNavRoute={setNavRoute} />
+            <EditTodo opened={editTodoOpened} setOpened={setEditTodoOpened} projectId={projectId} todoId={editTodoId} todoTitle={editTodoTitle}/>
             <h1>{project?.name}</h1>
             <p>{project?.description}</p>
             <h2>To Do List</h2>
@@ -75,6 +86,7 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
                         <p>Status: {item.completed ? "Completed" : "Pending"}</p>
                             <div className="actions">
                                 <button onClick={() => {toggleTodoCompleted(item.id)}}>Concluir</button>
+                                <button onClick={()=>{openEditTodo(item.id, item.title)}}>Editar</button>
                                 <button onClick={async () => {
                                     await invoke("delete_todo", {project_id: projectId, todo_id: item.id});
                                     getProjectById(projectId);
