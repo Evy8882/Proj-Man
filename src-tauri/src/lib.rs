@@ -19,11 +19,25 @@ impl Todo {
 }
 
 #[derive(Serialize, Deserialize)]
+struct Note {
+    id: String,
+    name: String,
+    content: String,
+}
+
+impl Note {
+    fn set_content(&mut self, content: &str) {
+        self.content = content.to_string();
+    }
+}
+
+#[derive(Serialize, Deserialize)]
 struct Project {
     id: String,
     name: String,
     description: String,
     todos: Vec<Todo>,
+    notes: Vec<Note>,
 }
 
 fn get_json_data() -> Option<Vec<Project>> {
@@ -68,6 +82,11 @@ fn create_new_project(name: &str, description: &str) -> String {
         name: name.to_string(),
         description: description.to_string(),
         todos: Vec::new(),
+        notes: Vec::from([Note {
+            id: Uuid::new_v4().as_simple().to_string(),
+            name: "main".to_string(),
+            content: String::new(),
+        }])
     };
     let p_id = project.id.clone();
     current_projects.push(project);
@@ -121,6 +140,30 @@ fn new_todo(project_id: &str, title: &str) {
 }
 
 #[tauri::command(rename_all = "snake_case")]
+fn new_note(project_id: &str, name: &str) {
+    if name.len() == 0 {
+        return;
+    }
+
+    let note = Note {
+        id: Uuid::new_v4().as_simple().to_string(),
+        name: name.to_string(),
+        content: String::new(),
+    };
+
+    let project = delete_project(project_id);
+    if let Some(mut proj) = project {
+        proj.notes.push(note);
+        let mut projects = match get_json_data() {
+            Some(v) => v,
+            None => Vec::new(),
+        };
+        projects.push(proj);
+        save_json_data(&projects);
+    }
+}
+
+#[tauri::command(rename_all = "snake_case")]
 fn set_todo_done(project_id: &str, todo_id: &str) {
     
     let project = delete_project(project_id);
@@ -160,6 +203,26 @@ fn set_todo_title(project_id: &str, todo_id: &str, new_title: &str) {
     }
 }
 
+#[tauri::command(rename_all="snake_case")]
+fn set_note_content(project_id: &str, note_id: &str, content: &str) {
+    let project = delete_project(project_id);
+
+    if let Some(mut proj) = project {
+        for note in &mut proj.notes {
+            if &note.id == note_id {
+                note.set_content(content);
+                break;
+            }
+        }
+        let mut projects = match get_json_data() {
+            Some(v) => v,
+            None => Vec::new()
+        };
+        projects.push(proj);
+        save_json_data(&projects);
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 struct TodoDeleteResponse {
     deleted_todo: Todo,
@@ -188,6 +251,23 @@ fn delete_todo(project_id: &str, todo_id: &str) -> Option<TodoDeleteResponse> {
         }
     }
     None
+}
+
+#[tauri::command(rename_all = "snake_case")]
+fn delete_note(project_id: &str, note_id: &str) {
+    let project = delete_project(project_id);
+    if let Some(mut proj) = project {
+        let position = proj.notes.iter().position(|note| &note.id == note_id);
+        if let Some(index) = position {
+            proj.notes.remove(index);
+            let mut projects: Vec<Project> = match get_json_data() {
+                Some(v) => v,
+                None => Vec::new(),
+            };
+            projects.push(proj);
+            save_json_data(&projects);
+        }
+    }
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -281,6 +361,9 @@ pub fn run() {
             update_project,
             delete_project,
             set_todo_title,
+            new_note,
+            set_note_content,
+            delete_note,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

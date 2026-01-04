@@ -4,15 +4,24 @@ import { Project } from "../types/types";
 import "./Project.css"
 import ProjBar from "../components/ProjBar";
 import EditTodo from "../components/EditTodo";
+import NewNote from "../components/NewNote";
+import DeleteNote from "../components/DeleteNote";
 
 function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => void, projectId: string}) {
     const [project, setProject] = useState<Project | null>(null);
     const [notFound, setNotFound] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
     const [title, setTitle] = useState<string>("");
+    type Modes = "todo" | "notes";
+    const [mode, setMode] = useState<Modes>("todo");
+    const [noteTab, setNoteTab] = useState<string>("");
+    const [textAreaContent, setTextAreaContent] = useState<string>("");
     const [editTodoOpened, setEditTodoOpened] = useState<boolean>(false);
     const [editTodoId, setEditTodoId] = useState<string>("");
     const [editTodoTitle, setEditTodoTitle] = useState<string>("");
+    const [newNoteOpened, setNewNoteOpened] = useState<boolean>(false);
+    const [deleteNoteOpened, setDeleteNoteOpened] = useState<boolean>(false);
+    const [deleteNoteId, setDeleteNoteId] = useState<string>("");
 
     async function getProjectById(id: string) {
         const projectJson = await invoke<string>("get_project_by_id", {project_id: id});
@@ -39,12 +48,35 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
 
     useEffect(() => {
         getProjectById(projectId);
-    }, [projectId, editTodoOpened])
+    }, [projectId, editTodoOpened, newNoteOpened, deleteNoteOpened]);
+
+    useEffect(() => {
+        if (mode === "notes") {
+            setTextAreaContent(project?.notes.find(n => n.id === noteTab)?.content || "");
+        }
+    }, [noteTab])
 
     const openEditTodo = (todoId: string, todoTitle: string) => {
         setEditTodoId(todoId);
         setEditTodoTitle(todoTitle);
         setEditTodoOpened(true);
+    }
+
+    async function saveNoteContent(projectId: string, noteId: string, newContent: string) {
+        if (noteTab) {
+            await invoke("set_note_content", {
+                project_id: projectId,
+                note_id: noteId,
+                content: newContent
+            });
+            getProjectById(projectId);
+        }
+    }
+
+    function openDeleteNote(noteId: string) {
+        setDeleteNoteId(noteId);
+        setDeleteNoteOpened(true);
+        setNoteTab("");
     }
 
     if (notFound) {
@@ -72,38 +104,75 @@ function ProjectPage({setNavRoute, projectId}: {setNavRoute: (route: string) => 
             <EditTodo opened={editTodoOpened} setOpened={setEditTodoOpened} projectId={projectId} todoId={editTodoId} todoTitle={editTodoTitle}/>
             <h1>{project?.name}</h1>
             <p>{project?.description}</p>
-            <h2>To Do List</h2>
-            <form className="new-todo-form" onSubmit={addNewTodo}>
-                <input type="text" className="new-todo-input" required value={title} onChange={(e) => setTitle(e.target.value)} />
-                <button className="new-todo-btn" type="submit">+</button>
-            </form>
-            <section className="to-do-list">
-                {project?.todos.length === 0 && <p>No to-do items found.</p>}
-                {project?.todos.map((item, index) => (
-                    <div key={index} className={`to-do-item${item.completed ? " completed" : ""}`}>
-                        <h3>{item.title}</h3>
-                        <div className="item-details">
-                        <p>Status: {item.completed ? "Completed" : "Pending"}</p>
-                            <div className="actions">
-                                <button onClick={() => {toggleTodoCompleted(item.id)}}>Concluir</button>
-                                <button onClick={()=>{openEditTodo(item.id, item.title)}}>Editar</button>
-                                <button onClick={async () => {
-                                    await invoke("delete_todo", {project_id: projectId, todo_id: item.id});
-                                    getProjectById(projectId);
-                                }}>Excluir</button>
-                                <button onClick={async () => {
-                                    await invoke("move_todo_up", {project_id: projectId, todo_id: item.id});
-                                    getProjectById(projectId);
-                                }}>↑</button>
-                                <button onClick={async () => {
-                                    await invoke("move_todo_down", {project_id: projectId, todo_id: item.id});
-                                    getProjectById(projectId);
-                                }}>↓</button>
+            <div className="mode-switcher">
+                <button onClick={() => setMode("todo")} disabled={mode === "todo"}>To Do</button>
+                <button onClick={() => setMode("notes")} disabled={mode === "notes"}>Notes</button>
+            </div>
+            { mode === "todo" ? (
+                <div className="to-do-section">
+                <h2 className="proj-subtitle">To Do List</h2>
+                <form className="new-todo-form" onSubmit={addNewTodo}>
+                    <input type="text" className="new-todo-input" required value={title} onChange={(e) => setTitle(e.target.value)} />
+                    <button className="new-todo-btn" type="submit">+</button>
+                </form>
+                <section className="to-do-list">
+                    {project?.todos.length === 0 && <p>No to-do items found.</p>}
+                    {project?.todos.map((item, index) => (
+                        <div key={index} className={`to-do-item${item.completed ? " completed" : ""}`}>
+                                <h3>{item.title}</h3>
+                                <div className="item-details">
+                                <p>Status: {item.completed ? "Completed" : "Pending"}</p>
+                                    <div className="actions">
+                                        <button onClick={() => {toggleTodoCompleted(item.id)}}>Concluir</button>
+                                        <button onClick={()=>{openEditTodo(item.id, item.title)}}>Editar</button>
+                                        <button onClick={async () => {
+                                            await invoke("delete_todo", {project_id: projectId, todo_id: item.id});
+                                            getProjectById(projectId);
+                                        }}>Excluir</button>
+                                        <button onClick={async () => {
+                                            await invoke("move_todo_up", {project_id: projectId, todo_id: item.id});
+                                            getProjectById(projectId);
+                                        }}>↑</button>
+                                        <button onClick={async () => {
+                                            await invoke("move_todo_down", {project_id: projectId, todo_id: item.id});
+                                            getProjectById(projectId);
+                                        }}>↓</button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        ))}
+                    </section>
+                </div>
+            ) :
+            mode === "notes" ? (
+                <div className="notes-section">
+                    <DeleteNote opened={deleteNoteOpened} setOpened={setDeleteNoteOpened} noteId={deleteNoteId} projectId={projectId}></DeleteNote>
+                    <NewNote opened={newNoteOpened} setOpened={setNewNoteOpened} projectId={projectId} />
+                    <h2 className="proj-subtitle">Notes</h2>
+                    <div className="notes-tab">
+                        {project?.notes.map((note, i) => (
+                            <div className="note-tab-container" key={note.id}>
+                            <button className="tab-btn" key={i} onClick={()=>{setNoteTab(note.id)}} disabled={noteTab === note.id}>{note.name} 
+                            </button>
+                                <button className="delete-tab-btn" onClick={()=>{
+                                    openDeleteNote(note.id);
+                                }}>
+                                    ×
+                                </button></div>
+                        ))}
+                        <button className="tab-btn" onClick={async ()=> {
+                            setNewNoteOpened(true);
+                        }}>+</button>
+                        {/* <button onClick={()=>{setNoteTab('main')}} disabled={noteTab === "main"}>Main</button> */}
                     </div>
-                ))}
-            </section>
+                    {noteTab && (
+                        <textarea className="notes-textarea" value={textAreaContent} onChange={(e) => {
+                            setTextAreaContent(e.target.value)
+                            saveNoteContent(projectId, noteTab || "", e.target.value);
+                        }}></textarea>
+                    )}
+                </div>
+            ) : null}
         </div>
     )
 }
