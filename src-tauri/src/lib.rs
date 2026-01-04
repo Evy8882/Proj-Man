@@ -25,6 +25,12 @@ struct Note {
     content: String,
 }
 
+impl Note {
+    fn set_content(&mut self, content: &str) {
+        self.content = content.to_string();
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 struct Project {
     id: String,
@@ -134,6 +140,26 @@ fn new_todo(project_id: &str, title: &str) {
 }
 
 #[tauri::command(rename_all = "snake_case")]
+fn new_note(project_id: &str, name: &str) {
+    let note = Note {
+        id: Uuid::new_v4().as_simple().to_string(),
+        name: name.to_string(),
+        content: String::new(),
+    };
+
+    let project = delete_project(project_id);
+    if let Some(mut proj) = project {
+        proj.notes.push(note);
+        let mut projects = match get_json_data() {
+            Some(v) => v,
+            None => Vec::new(),
+        };
+        projects.push(proj);
+        save_json_data(&projects);
+    }
+}
+
+#[tauri::command(rename_all = "snake_case")]
 fn set_todo_done(project_id: &str, todo_id: &str) {
     
     let project = delete_project(project_id);
@@ -167,6 +193,24 @@ fn set_todo_title(project_id: &str, todo_id: &str, new_title: &str) {
         let mut projects: Vec<Project> = match get_json_data() {
         Some(v) => v,
         None => Vec::new(),
+        };
+        projects.push(proj);
+        save_json_data(&projects);
+    }
+}
+
+#[tauri::command(rename_all="snake_case")]
+fn set_note_content(project_id: &str, note_id: &str, content: &str) {
+    let project = delete_project(project_id);
+
+    if let Some(mut proj) = project {
+        let position = proj.notes.iter().position(|n| n.id == note_id);
+        if let Some(pos) = position {
+            proj.notes[pos].set_content(content);
+        }
+        let mut projects = match get_json_data() {
+            Some(v) => v,
+            None => Vec::new()
         };
         projects.push(proj);
         save_json_data(&projects);
@@ -294,6 +338,8 @@ pub fn run() {
             update_project,
             delete_project,
             set_todo_title,
+            new_note,
+            set_note_content,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
